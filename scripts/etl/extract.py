@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 from scripts.etl.utils import normalize_columns
 
-FILE_NAME = {
+FILES= {
     'employees.csv': 'employees',
     'stores.csv': 'stores',
     'monthly_performance.csv': 'monthly_performance',
@@ -11,13 +11,22 @@ FILE_NAME = {
 }
 
 BASE_PATH = Path.cwd()
+RAW_DATA_PATH = BASE_PATH / 'data' / 'raw'
 
-
-def extract():
+def extract() -> dict:
+    """
+    Extract raw data from CSV files and normalize column names.
+    Returns:
+        dict: Dictionary with dataset names as keys and DataFrames as values
+    """
     datasets = {}
-    for file, name in FILE_NAME.items():
-        file_path = BASE_PATH / 'data' / 'raw' / file
-        df = pd.read_csv(file_path)
+    print("[Extract Phase] Loading raw data...")
+    for file, name in FILES.items():
+        file_path = RAW_DATA_PATH / file
+        if not file_path.exists():
+            raise FileNotFoundError(f"Raw data file not found: {file_path}")
+        df = pd.read_csv(file_path, decimal = ",")
         df = normalize_columns(df)
         datasets[name] = df
+        print(f"Extracted {name}: {len(df):,} rows, {len(df.columns)} columns")
     return datasets
